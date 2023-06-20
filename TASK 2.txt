@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include <mpi.h>
+
+#define ARRAY_SIZE 15
+
+int main(int argc, char** argv) {
+    MPI_Init(&argc, &argv);
+
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    int array[ARRAY_SIZE] = {5, 8, 3, 2, 10, 7, 1, 9, 4, 6, 12, 15, 11, 13, 14};
+    int localMin = array[0];
+
+    for (int i = rank; i < ARRAY_SIZE; i += size) {
+        if (array[i] < localMin) {
+            localMin = array[i];
+        }
+    }
+
+    int globalMin;
+    MPI_Allreduce(&localMin, &globalMin, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("Minimum value: %d\n", globalMin);
+    }
+
+    MPI_Finalize();
+    return 0;
+}
